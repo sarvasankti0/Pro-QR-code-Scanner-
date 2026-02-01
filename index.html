@@ -4,551 +4,361 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#000000">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Pro QR Master</title>
     
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
     <style>
-        /* --- 1. THEME & VARIABLES --- */
         :root {
             --primary: #6C63FF; 
-            /* Relaxing Gradient: Deep Purple to Ocean Blue */
-            --grad-main: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --grad-accent: linear-gradient(135deg, #00BFA6, #009688);
-            
-            --bg: #050505; /* Deep AMOLED Black */
-            --surface: #141414; /* Slightly lighter black for cards */
-            --surface-glass: rgba(20, 20, 20, 0.85);
-            
-            --text-main: #FFFFFF;
-            --text-muted: #A0A0A0;
-            
-            --border: rgba(255, 255, 255, 0.1);
-            --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.5);
-            --shadow-glow: 0 0 20px rgba(118, 75, 162, 0.4);
-
-            --radius-xl: 24px;
-            --radius-md: 16px;
-            --font-head: 'Montserrat', sans-serif;
-            --font-body: 'Outfit', sans-serif;
+            --accent: #00BFA6;
+            --bg: #000000;
+            --surface: #121212;
+            --glass: rgba(255, 255, 255, 0.05);
+            --text: #FFFFFF;
+            --text-dim: #A0A0A0;
+            --radius: 20px;
+            --grad: linear-gradient(135deg, #6C63FF, #4B45E5);
         }
 
-        /* --- 2. RESET & BASE --- */
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; user-select: none; }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         
         body {
-            font-family: var(--font-body);
+            font-family: 'Outfit', sans-serif;
             background-color: var(--bg);
-            color: var(--text-main);
+            color: var(--text);
             height: 100vh;
             overflow: hidden;
             display: flex;
             flex-direction: column;
         }
 
-        /* --- 3. ANIMATIONS & UI FEEL --- */
-        /* Soft Fade In */
-        @keyframes fadeInScale {
-            from { opacity: 0; transform: scale(0.96) translateY(10px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
+        /* --- Animations --- */
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+
+        .screen { 
+            padding: 20px; 
+            height: 100%; 
+            overflow-y: auto; 
+            animation: slideUp 0.4s ease-out;
+            padding-bottom: 100px;
         }
 
-        /* Button Press Animation */
-        .btn-anim { transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease; }
-        .btn-anim:active { transform: scale(0.94); box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
-
-        /* Ripple Effect Container */
-        .ripple { position: relative; overflow: hidden; }
-        .ripple-effect {
-            position: absolute; border-radius: 50%; background: rgba(255, 255, 255, 0.3);
-            transform: scale(0); animation: ripple 0.6s linear; pointer-events: none;
-        }
-        @keyframes ripple { to { transform: scale(4); opacity: 0; } }
-
-        /* --- 4. COMPONENTS --- */
         .hidden { display: none !important; }
 
-        /* Buttons */
-        .btn-primary {
-            width: 100%;
-            padding: 18px;
-            border: none;
-            border-radius: var(--radius-xl);
-            background: var(--grad-main);
-            color: white;
-            font-family: var(--font-head);
-            font-weight: 600;
-            font-size: 1.1rem;
-            letter-spacing: 0.5px;
-            box-shadow: var(--shadow-glow);
-            cursor: pointer;
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-        }
-        
-        .btn-icon {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid var(--border);
-            color: white;
-            width: 45px; height: 45px;
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.2rem;
-            backdrop-filter: blur(10px);
-            cursor: pointer;
-        }
-
-        .btn-secondary {
-            background: transparent;
-            border: 1px solid var(--border);
-            color: var(--text-main);
-            padding: 12px 24px;
-            border-radius: 50px;
-            font-size: 0.9rem;
-            font-family: var(--font-head);
-            cursor: pointer;
-        }
-
-        /* --- 5. LAYOUT STRUCTURE --- */
-        #app { width: 100%; height: 100%; position: relative; overflow-y: auto; scroll-behavior: smooth; }
-
-        /* Header */
+        /* --- UI Components --- */
         header {
-            padding: 20px 24px;
-            display: flex; align-items: center; justify-content: space-between;
-            position: sticky; top: 0; z-index: 50;
-            background: linear-gradient(to bottom, var(--bg) 0%, rgba(5,5,5,0.9) 80%, rgba(5,5,5,0) 100%);
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(10px);
+            z-index: 100;
         }
-        .app-title { font-family: var(--font-head); font-weight: 700; font-size: 1.4rem; letter-spacing: -0.5px; }
 
-        /* Screens */
-        .screen { padding: 20px 24px 100px 24px; animation: fadeInScale 0.4s ease-out; }
+        h1 { font-family: 'Montserrat', sans-serif; font-size: 1.4rem; font-weight: 700; }
 
-        /* Splash */
-        #splash {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg); z-index: 1000;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        .btn-circle {
+            width: 45px; height: 45px; border-radius: 50%;
+            border: 1px solid var(--glass); background: var(--glass);
+            color: white; display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; cursor: pointer; transition: 0.3s;
         }
-        .splash-loader {
-            width: 60px; height: 60px; border: 4px solid rgba(255,255,255,0.1);
-            border-top: 4px solid var(--primary); border-radius: 50%;
-            animation: spin 1s linear infinite; margin-top: 20px;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Home Cards */
-        .card-menu {
+        .btn-circle:active { transform: scale(0.9); background: var(--primary); }
+
+        .main-card {
             background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-xl);
+            border: 1px solid var(--glass);
+            border-radius: var(--radius);
             padding: 30px;
             text-align: center;
             margin-bottom: 20px;
-            position: relative;
-            overflow: hidden;
-        }
-        /* Add a subtle shine effect */
-        .card-menu::before {
-            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 60%);
-            transform: rotate(45deg); pointer-events: none;
-        }
-        .card-icon { font-size: 3.5rem; margin-bottom: 15px; background: var(--grad-main); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .card-title { font-size: 1.5rem; font-weight: 700; font-family: var(--font-head); margin-bottom: 8px; }
-        .card-desc { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 25px; line-height: 1.4; }
-
-        /* Scanner */
-        #reader { 
-            border-radius: var(--radius-xl); 
-            overflow: hidden; 
-            box-shadow: 0 0 0 2px var(--border);
-            background: #000;
-            min-height: 300px;
-        }
-        .result-card {
-            background: var(--surface);
-            padding: 24px;
-            border-radius: var(--radius-xl);
-            margin-top: 24px;
-            border: 1px solid var(--border);
-            text-align: center;
-        }
-        .result-data {
-            background: rgba(255,255,255,0.05);
-            padding: 15px;
-            border-radius: 12px;
-            font-family: monospace;
-            word-break: break-all;
-            margin: 15px 0;
-            color: var(--primary);
-            font-size: 1.1rem;
+            transition: 0.3s;
         }
 
-        /* Generator */
-        .input-box {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            padding: 18px;
+        .icon-box {
+            font-size: 3rem; margin-bottom: 15px;
+            background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        .primary-btn {
             width: 100%;
-            color: white;
-            font-size: 1.1rem;
-            font-family: var(--font-body);
-            outline: none;
-            transition: border-color 0.3s;
-            margin-bottom: 25px;
-        }
-        .input-box:focus { border-color: var(--primary); }
-        
-        .qr-output-wrapper {
-            background: white;
-            padding: 20px;
-            border-radius: var(--radius-xl);
-            display: inline-block;
-            margin: 30px auto;
-            box-shadow: 0 10px 40px rgba(255,255,255,0.1);
-        }
-
-        /* History */
-        .history-item {
-            display: flex; align-items: center; justify-content: space-between;
-            background: var(--surface);
-            border: 1px solid var(--border);
             padding: 16px;
-            border-radius: var(--radius-md);
-            margin-bottom: 12px;
+            border-radius: 15px;
+            border: none;
+            background: var(--grad);
+            color: white;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(108, 99, 255, 0.3);
         }
-        .h-content { flex: 1; margin-right: 15px; overflow: hidden; }
-        .h-text { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .h-date { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
 
-        /* Toast */
+        /* --- Scanner UI --- */
+        #reader {
+            width: 100%;
+            border-radius: var(--radius);
+            overflow: hidden;
+            border: 2px solid var(--primary);
+            background: #000;
+        }
+
+        .result-box {
+            background: var(--surface);
+            padding: 20px;
+            border-radius: var(--radius);
+            margin-top: 20px;
+            border-left: 5px solid var(--primary);
+        }
+
+        /* --- Generator UI --- */
+        .input-field {
+            width: 100%;
+            padding: 18px;
+            background: var(--surface);
+            border: 1px solid var(--glass);
+            border-radius: 15px;
+            color: white;
+            font-size: 1rem;
+            margin-bottom: 20px;
+            outline: none;
+        }
+
+        .input-field:focus { border-color: var(--primary); }
+
+        .qr-display {
+            background: white;
+            padding: 15px;
+            border-radius: 15px;
+            display: inline-block;
+            margin: 20px 0;
+        }
+
+        /* --- Splash --- */
+        #splash {
+            position: fixed; inset: 0; background: var(--bg);
+            z-index: 1000; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+        }
+
+        .loader {
+            width: 40px; height: 40px; border: 3px solid var(--glass);
+            border-top-color: var(--primary); border-radius: 50%;
+            animation: spin 1s linear infinite; margin-top: 20px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* --- Toast --- */
         #toast {
-            visibility: hidden; min-width: 250px; background-color: #333; color: #fff;
-            text-align: center; border-radius: 50px; padding: 16px; position: fixed;
-            z-index: 2000; left: 50%; bottom: 40px; transform: translateX(-50%) translateY(20px);
-            opacity: 0; transition: all 0.3s;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.4);
-            font-weight: 500;
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: #333; color: white; padding: 12px 24px;
+            border-radius: 50px; font-size: 0.9rem; z-index: 2000;
+            opacity: 0; transition: 0.3s; pointer-events: none;
         }
-        #toast.show { visibility: visible; opacity: 1; transform: translateX(-50%) translateY(0); }
-
     </style>
 </head>
 <body>
 
     <div id="splash">
-        <i class="fa-solid fa-qrcode" style="font-size: 4rem; color: white; margin-bottom: 20px;"></i>
-        <h1 style="font-family: var(--font-head);">Pro QR</h1>
-        <div class="splash-loader"></div>
+        <i class="fa-solid fa-qrcode" style="font-size: 5rem; color: var(--primary); animation: pulse 2s infinite;"></i>
+        <h1 style="margin-top: 15px;">PRO QR MASTER</h1>
+        <div class="loader"></div>
     </div>
 
     <div id="app" class="hidden">
-        
         <header>
-            <button id="btn-back" class="btn-icon btn-anim ripple hidden" onclick="goHome()">
-                <i class="fa-solid fa-chevron-left"></i>
-            </button>
-            <div class="app-title">Pro QR</div>
-            <button class="btn-icon btn-anim ripple" onclick="goTo('history')">
-                <i class="fa-solid fa-clock-rotate-left"></i>
-            </button>
+            <button id="back-btn" class="btn-circle hidden" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></button>
+            <h1 id="screen-title">Pro QR Master</h1>
+            <button class="btn-circle" onclick="goTo('history')"><i class="fa-solid fa-clock-rotate-left"></i></button>
         </header>
 
-        <section id="screen-home" class="screen">
-            <div class="card-menu">
-                <i class="fa-solid fa-expand card-icon"></i>
-                <div class="card-title">Scan Code</div>
-                <div class="card-desc">Scan QR codes instantly using your camera.</div>
-                <button class="btn-primary btn-anim ripple" onclick="goTo('scan')">
-                    <i class="fa-solid fa-camera"></i> Start Scanning
-                </button>
+        <div id="home" class="screen">
+            <div class="main-card">
+                <i class="fa-solid fa-expand icon-box"></i>
+                <h2>Scan QR</h2>
+                <p style="color: var(--text-dim); margin: 10px 0 20px;">Scan any code via camera</p>
+                <button class="primary-btn" onclick="goTo('scan')">Open Scanner</button>
             </div>
-
-            <div class="card-menu">
-                <i class="fa-solid fa-wand-magic-sparkles card-icon" style="background: var(--grad-accent); -webkit-background-clip: text;"></i>
-                <div class="card-title">Create QR</div>
-                <div class="card-desc">Generate stylish codes for text, links, or emails.</div>
-                <button class="btn-primary btn-anim ripple" onclick="goTo('generate')" style="background: var(--grad-accent);">
-                    <i class="fa-solid fa-pen-nib"></i> Create Now
-                </button>
+            <div class="main-card">
+                <i class="fa-solid fa-wand-magic-sparkles icon-box" style="background: linear-gradient(135deg, var(--accent), #008f7a); -webkit-background-clip: text;"></i>
+                <h2>Create QR</h2>
+                <p style="color: var(--text-dim); margin: 10px 0 20px;">Generate high-quality codes</p>
+                <button class="primary-btn" style="background: var(--accent);" onclick="goTo('generate')">Create Now</button>
             </div>
-        </section>
+        </div>
 
-        <section id="screen-scan" class="screen hidden">
+        <div id="scan" class="screen hidden">
             <div id="reader"></div>
-            <p style="text-align: center; color: var(--text-muted); margin-top: 15px;">Align QR code within frame</p>
-
-            <div id="scan-result" class="result-card hidden">
-                <div style="color:var(--text-muted); font-size:0.9rem;">Content Found</div>
-                <div class="result-data" id="result-text">...</div>
-                
-                <div style="display:flex; gap:10px; justify-content: center; margin-top: 20px;">
-                    <button class="btn-secondary btn-anim ripple" onclick="copyResult()">Copy</button>
-                    <button class="btn-secondary btn-anim ripple" id="btn-open-link" onclick="openLink()">Open</button>
-                    <button class="btn-secondary btn-anim ripple" onclick="shareResult()"><i class="fa-solid fa-share-nodes"></i></button>
+            <div id="scan-result" class="hidden">
+                <div class="result-box">
+                    <p style="font-size: 0.8rem; color: var(--text-dim);">RESULT:</p>
+                    <p id="result-text" style="word-break: break-all; font-weight: 500; margin: 5px 0;"></p>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
+                    <button class="primary-btn" onclick="copyText()">Copy</button>
+                    <button id="link-btn" class="primary-btn" style="background: var(--accent);" onclick="openScannedLink()">Open</button>
                 </div>
             </div>
-        </section>
+        </div>
 
-        <section id="screen-generate" class="screen hidden">
-            <input type="text" id="qr-text" class="input-box" placeholder="Paste link or type text here...">
+        <div id="generate" class="screen hidden" style="text-align: center;">
+            <input type="text" id="qr-input" class="input-field" placeholder="Type text or paste URL here...">
+            <button class="primary-btn" onclick="generateNow()">Generate QR Code</button>
             
-            <button class="btn-primary btn-anim ripple" onclick="generateQR()">
-                <i class="fa-solid fa-bolt"></i> Generate Code
-            </button>
-
-            <div style="text-align: center; margin-top: 20px;" id="qr-preview-area" class="hidden">
-                <div class="qr-output-wrapper">
-                    <div id="qrcode"></div>
-                </div>
-                <br>
-                <button class="btn-primary btn-anim ripple" onclick="downloadQR()" style="background: var(--surface); border: 1px solid var(--border); color: white; width: auto; display: inline-flex; padding: 12px 30px;">
-                    <i class="fa-solid fa-download"></i> Save to Gallery
-                </button>
+            <div id="gen-output" class="hidden">
+                <div class="qr-display" id="qrcode"></div>
+                <button class="primary-btn" onclick="downloadQR()" style="background: #333;"><i class="fa-solid fa-download"></i> Save to Gallery</button>
             </div>
-        </section>
+        </div>
 
-        <section id="screen-history" class="screen hidden">
+        <div id="history" class="screen hidden">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2>Recent</h2>
-                <button class="btn-secondary btn-anim ripple" style="font-size: 0.8rem; padding: 8px 16px; border-color: #ff5252; color: #ff5252;" onclick="clearHistory()">Clear All</button>
+                <h2>History</h2>
+                <button onclick="clearAllHistory()" style="background:none; border:none; color: #FF5252; cursor:pointer;">Clear All</button>
             </div>
             <div id="history-list"></div>
-        </section>
-
+        </div>
     </div>
 
     <div id="toast">Message</div>
 
     <script>
-        // --- 1. SETUP & RIPPLE EFFECT ---
-        window.addEventListener('load', () => {
-            // Check for file protocol warning
-            if (window.location.protocol === 'file:') {
-                alert("⚠️ CAMERA WARNING\n\nBrowsers block camera access on local files.\nTo test the camera, you must host this file (Live Server, GitHub Pages, etc).");
-            }
+        let scanner = null;
 
+        // --- Core Navigation ---
+        window.onload = () => {
             setTimeout(() => {
                 document.getElementById('splash').style.display = 'none';
                 document.getElementById('app').classList.remove('hidden');
-            }, 1500);
-            loadHistory();
-        });
+            }, 2000);
+            renderHistory();
+        };
 
-        // Add ripple effect to all buttons
-        document.addEventListener('click', function(e) {
-            if (e.target.classList.contains('ripple') || e.target.closest('.ripple')) {
-                const button = e.target.classList.contains('ripple') ? e.target : e.target.closest('.ripple');
-                const circle = document.createElement('span');
-                const diameter = Math.max(button.clientWidth, button.clientHeight);
-                const radius = diameter / 2;
-                
-                const rect = button.getBoundingClientRect();
-                circle.style.width = circle.style.height = `${diameter}px`;
-                circle.style.left = `${e.clientX - rect.left - radius}px`;
-                circle.style.top = `${e.clientY - rect.top - radius}px`;
-                circle.classList.add('ripple-effect');
-                
-                const rippleContainer = button.querySelector('.ripple-effect');
-                if (rippleContainer) rippleContainer.remove();
-                
-                button.appendChild(circle);
-            }
-        });
-
-        // --- 2. NAVIGATION ---
-        let html5QrCode;
-
-        function goTo(screen) {
+        function goTo(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
-            document.getElementById(`screen-${screen}`).classList.remove('hidden');
+            document.getElementById(screenId).classList.remove('hidden');
             
-            const title = document.querySelector('.app-title');
-            const backBtn = document.getElementById('btn-back');
+            const isHome = screenId === 'home';
+            document.getElementById('back-btn').classList.toggle('hidden', isHome);
+            document.getElementById('screen-title').innerText = isHome ? "Pro QR Master" : screenId.toUpperCase();
 
-            if (screen === 'home') {
-                title.innerText = "Pro QR";
-                backBtn.classList.add('hidden');
-                stopScanner();
-            } else {
-                title.innerText = screen.charAt(0).toUpperCase() + screen.slice(1);
-                backBtn.classList.remove('hidden');
+            if (screenId !== 'scan' && scanner) {
+                scanner.stop().catch(() => {});
             }
-
-            if (screen === 'scan') startScanner();
-            if (screen === 'history') renderHistory();
+            if (screenId === 'scan') startScanner();
         }
 
         function goHome() { goTo('home'); }
 
-        // --- 3. SCANNER LOGIC ---
+        // --- Logic: Scanner ---
         function startScanner() {
             document.getElementById('scan-result').classList.add('hidden');
-            document.getElementById('reader').classList.remove('hidden');
-            
-            html5QrCode = new Html5Qrcode("reader");
-            
-            const config = { fps: 10, qrbox: { width: 250, height: 250 } };
-            
-            html5QrCode.start({ facingMode: "environment" }, config, (decodedText) => {
-                // Success
-                stopScanner();
-                document.getElementById('reader').classList.add('hidden');
-                document.getElementById('scan-result').classList.remove('hidden');
-                document.getElementById('result-text').innerText = decodedText;
-                
-                // Show/Hide Open Link button
-                const isUrl = /^(http|https):\/\/[^ "]+$/.test(decodedText);
-                document.getElementById('btn-open-link').style.display = isUrl ? 'inline-block' : 'none';
-
-                addToHistory('Scan', decodedText);
-                navigator.vibrate(50); // Haptic feedback
-            }).catch(err => {
-                console.log(err);
-                // Don't alert immediately, user might just have denied once
-            });
+            scanner = new Html5Qrcode("reader");
+            scanner.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: 250 },
+                (text) => {
+                    document.getElementById('result-text').innerText = text;
+                    document.getElementById('scan-result').classList.remove('hidden');
+                    document.getElementById('link-btn').style.display = text.startsWith('http') ? 'block' : 'none';
+                    saveToHistory('SCAN', text);
+                    navigator.vibrate(100);
+                    scanner.stop();
+                }
+            ).catch(err => notify("Camera error or permission denied."));
         }
 
-        function stopScanner() {
-            if (html5QrCode && html5QrCode.isScanning) {
-                html5QrCode.stop().then(() => html5QrCode.clear()).catch(console.error);
+        // --- Logic: Generator ---
+        function generateNow() {
+            let val = document.getElementById('qr-input').value.trim();
+            if (!val) return notify("Please enter some content");
+
+            // Fix for "Invalid" URL issues
+            if (val.includes('.') && !val.startsWith('http') && !val.includes(' ')) {
+                val = 'https://' + val;
             }
-        }
-
-        function copyResult() {
-            const text = document.getElementById('result-text').innerText;
-            navigator.clipboard.writeText(text);
-            showToast("Copied to Clipboard");
-        }
-
-        function openLink() {
-            const text = document.getElementById('result-text').innerText;
-            window.open(text, '_blank');
-        }
-
-        function shareResult() {
-            const text = document.getElementById('result-text').innerText;
-            if (navigator.share) navigator.share({ title: 'QR Data', text: text });
-            else copyResult();
-        }
-
-        // --- 4. GENERATOR LOGIC ---
-        let qrcodeObj = null;
-
-        function generateQR() {
-            const text = document.getElementById('qr-text').value;
-            if (!text) { showToast("Please enter text first"); return; }
 
             const container = document.getElementById('qrcode');
             container.innerHTML = "";
-            document.getElementById('qr-preview-area').classList.remove('hidden');
-
-            // Generate
-            qrcodeObj = new QRCode(container, {
-                text: text,
-                width: 256,
-                height: 256,
-                colorDark : "#000000",
-                colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.H
+            
+            new QRCode(container, {
+                text: val,
+                width: 200,
+                height: 200,
+                correctLevel: QRCode.CorrectLevel.H // High reliability
             });
 
-            addToHistory('Created', text);
-            // Hide keyboard
-            document.getElementById('qr-text').blur();
+            document.getElementById('gen-output').classList.remove('hidden');
+            saveToHistory('GEN', val);
+            notify("QR Code Ready!");
         }
 
         function downloadQR() {
-            const qrDiv = document.getElementById("qrcode");
+            const img = document.querySelector("#qrcode img");
+            const canvas = document.querySelector("#qrcode canvas");
+            const link = document.createElement('a');
             
-            // Wait slightly for canvas to render if just generated
-            setTimeout(() => {
-                const img = qrDiv.querySelector("img");
-                const canvas = qrDiv.querySelector("canvas");
-                let url = "";
-
-                if (img && img.src && img.src.startsWith("data:image")) url = img.src;
-                else if (canvas) url = canvas.toDataURL("image/png");
-
-                if (url) {
-                    const link = document.createElement('a');
-                    link.href = url;
-                    link.download = `QR_${Date.now()}.png`;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    showToast("Saving to Downloads folder...");
-                } else {
-                    showToast("Error generating image");
-                }
-            }, 100);
+            // Try image tag first, fallback to canvas
+            link.href = img ? img.src : canvas.toDataURL("image/png");
+            link.download = `QR_${Date.now()}.png`;
+            link.click();
+            notify("Saved to Downloads!");
         }
 
-        // --- 5. HISTORY & UTILS ---
-        let historyData = [];
-
-        function loadHistory() {
-            const data = localStorage.getItem('qr_history_pro');
-            if (data) historyData = JSON.parse(data);
+        // --- Logic: Utils ---
+        function notify(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.style.opacity = "1";
+            setTimeout(() => t.style.opacity = "0", 2500);
         }
 
-        function addToHistory(type, text) {
-            historyData.unshift({ type, text, date: new Date().toLocaleDateString() });
-            if (historyData.length > 20) historyData.pop();
-            localStorage.setItem('qr_history_pro', JSON.stringify(historyData));
+        function copyText() {
+            const txt = document.getElementById('result-text').innerText;
+            navigator.clipboard.writeText(txt);
+            notify("Copied to clipboard!");
+        }
+
+        function openScannedLink() {
+            window.open(document.getElementById('result-text').innerText, '_blank');
+        }
+
+        // --- Logic: History ---
+        function saveToHistory(type, data) {
+            let hist = JSON.parse(localStorage.getItem('qr_hist') || '[]');
+            hist.unshift({ type, data, time: new Date().toLocaleTimeString() });
+            localStorage.setItem('qr_hist', JSON.stringify(hist.slice(0, 20)));
+            renderHistory();
         }
 
         function renderHistory() {
+            const hist = JSON.parse(localStorage.getItem('qr_hist') || '[]');
             const list = document.getElementById('history-list');
-            list.innerHTML = "";
-            if(historyData.length === 0) list.innerHTML = "<div style='text-align:center; color:var(--text-muted); padding:20px;'>No history yet</div>";
-
-            historyData.forEach((item, index) => {
-                const div = document.createElement('div');
-                div.className = 'history-item';
-                div.innerHTML = `
-                    <div class="h-content">
-                        <div class="h-text">${item.text}</div>
-                        <div class="h-date">${item.type} • ${item.date}</div>
+            list.innerHTML = hist.map(item => `
+                <div class="main-card" style="padding: 15px; text-align: left; display: flex; align-items: center; gap: 15px;">
+                    <i class="fa-solid ${item.type === 'SCAN' ? 'fa-camera' : 'fa-pen'}" style="color: var(--primary)"></i>
+                    <div style="flex: 1; overflow: hidden;">
+                        <div style="font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.data}</div>
+                        <div style="font-size: 0.7rem; color: var(--text-dim)">${item.type} • ${item.time}</div>
                     </div>
-                    <button class="btn-icon ripple" style="width:35px; height:35px; font-size:0.9rem;" onclick="copyText('${item.text}')">
-                        <i class="fa-regular fa-copy"></i>
-                    </button>
-                `;
-                list.appendChild(div);
-            });
+                </div>
+            `).join('') || '<p style="text-align:center; color:var(--text-dim);">No history yet</p>';
         }
 
-        function clearHistory() {
-            if(confirm("Delete all history?")) {
-                historyData = [];
-                localStorage.removeItem('qr_history_pro');
-                renderHistory();
-            }
+        function clearAllHistory() {
+            localStorage.removeItem('qr_hist');
+            renderHistory();
+            notify("History cleared");
         }
-
-        function copyText(txt) {
-            navigator.clipboard.writeText(txt);
-            showToast("Copied");
-        }
-
-        function showToast(msg) {
-            const t = document.getElementById("toast");
-            t.innerText = msg;
-            t.classList.add("show");
-            setTimeout(() => t.classList.remove("show"), 3000);
-        }
-
     </script>
 </body>
 </html>
